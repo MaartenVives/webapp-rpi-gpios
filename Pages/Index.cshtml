@@ -4,13 +4,16 @@
     ViewData["Title"] = "Home page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-<p>Hello, world! The time on the server is @DateTime.Now</p>
-<form method="post">
-   <input asp-for="Output18" />
-    <button>Click</button>
-</form>
-
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"]</title>
+</head>
+<body>
+    <div class="text-center">
+        <h1>Temperature Monitor</h1>
+        <p>Current Temperature: @Model.CurrentTemperature °C</p>
+    </div>
+</body>
+</html>

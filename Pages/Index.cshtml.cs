@@ -1,36 +1,49 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using System.Device.I2c;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Device.Gpio;
-
-namespace aspnetcoreapp.Pages;
 
 public class IndexModel : PageModel
 {
-    private readonly ILogger<IndexModel> _logger;
-    private GpioController controller;
-
-    public IndexModel(GpioController controller, ILogger<IndexModel> logger)
-    {
-        this.controller=controller;
-        _logger = logger;
-    }
-
-    [BindProperty]
-    public bool Output18 { get; set; }
+    public double CurrentTemperature { get; set; }
 
     public void OnGet()
     {
-
+        // Hier zou je de code moeten toevoegen om de temperatuur uit de TC74-sensor te lezen
+        CurrentTemperature = LeesTemperatuurVanSensor();
     }
 
-    public void OnPost()
+    private double LeesTemperatuurVanSensor()
     {
-        //using(var controller = new GpioController())
+        try
         {
-           // controller.OpenPin(18,PinMode.Output);
-            controller.Write(18,Output18?PinValue.High:PinValue.Low);
-            Console.WriteLine($"Output 1 is {Output18}");
+            const int TC74_ADDR = 0x48;
+            const byte TEMP_REG = 0x00;
+
+            // Open de I2C-bus (busId: 1 voor meeste moderne Raspberry Pi-modellen)
+            using (var i2c = I2cDevice.Create(new I2cConnectionSettings(1, TC74_ADDR)))
+            {
+                // Lees de temperatuur uit de TC74-sensor
+                byte[] rawData = new byte[1];
+                i2c.WriteByte(TEMP_REG);
+                i2c.Read(rawData);
+
+                // Converteer de ruwe gegevens naar de temperatuurwaarde
+                double temperature = rawData[0];
+
+                // Print de temperatuur naar de terminal
+                Console.WriteLine($"Gemeten temperatuur: {temperature} °C");
+
+                // Geef de gelezen temperatuur terug
+                return temperature;
+            }
+        }
+        catch (Exception ex)
+        {
+            // Behandel eventuele fouten bij het lezen van de temperatuur
+            // Log de fout of neem andere acties op basis van je vereisten
+            Console.WriteLine($"Fout bij het lezen van temperatuur: {ex.Message}");
+            return double.NaN; // Retourneer een foutwaarde
         }
     }
-
 }
